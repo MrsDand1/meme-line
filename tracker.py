@@ -32,7 +32,6 @@ async def lifespan(app):
     global _capture_task
     conn = _conn()
     db.init_db(conn)
-    conn.execute("PRAGMA busy_timeout = 5000")
     conn.execute(
         "INSERT OR REPLACE INTO meta (key, value) VALUES ('started_at', ?)",
         (str(_STARTED_AT),),
