@@ -1,0 +1,17 @@
+{
+  "signature": "4Fwg8cPkwxS5ghqfC2DbnRPP4k5EWs1HhwyraKN4phuvqWaBcX5guGWoZMCPzhpgxAR9xcizTMp6DbMusX4aUAzq",
+  "mint": "9112ktmpXnFYbULPqkg1J9PhiHHEVDE1uBJ6ayWapump",
+  "traderPublicKey": "DkFDkr95h7A19HMqiF5g8A4YXkjxp2kmeCibJ6MLbpdr",
+  "txType": "create",
+  "initialBuy": 66285714.223523,
+  "solAmount": 1.97530864,
+  "bondingCurveKey": "46GCWN3GxVejz1nFLPT6xYm1oTo9gUogG4aM8qX46Ro6",
+  "vTokensInBondingCurve": 1006714285.776477,
+  "vSolInBondingCurve": 31.975308639999987,
+  "marketCapSol": 31.762049165059267,
+  "name": "Flyshake",
+  "symbol": "FLYSHAKE",
+  "uri": "https://ipfs.io/ipfs/bafkreicx4wtkvsuk6qbjhrqyudkxgkoihfh5zni5b3p7ej3ufxu5rugyzu",
+  "is_mayhem_mode": false,
+  "pool": "pump"
+}
