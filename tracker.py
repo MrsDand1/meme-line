@@ -46,7 +46,7 @@ async def lifespan(app):
         _capture_task.cancel()
 
 
-app = FastAPI(title="The Meme Line", version=config.VERSION)
+app = FastAPI(title="The Meme Line", version=config.VERSION, lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
