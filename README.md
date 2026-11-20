@@ -14,8 +14,15 @@ positive after fees).
 
 ## What it is
 
-- **Feed:** PumpPortal WebSocket — new-token launches + migration
-  (graduation) events, one connection, reconnect with backoff, gap logging.
+- **Feed:** direct Solana feed — `logsSubscribe` on the pump.fun
+  program via the public Solana RPC WebSocket (free, no key);
+  client-side filter to Create/CreateV2 instructions; the launch is
+  extracted from the CreateEvent in the notification's own logs (no
+  RPC call), with one throttled `getTransaction` per candidate as a
+  fallback when no event is in the logs. PumpPortal client kept as
+  fallback behind `FEED_SOURCE=pumpportal` (PumpPortal has been
+  unreachable since 2026-11-20). One connection, reconnect with
+  backoff, gap logging.
 - **Evaluation:** 60-second poller, exactly once per token at age 10
   minutes (grace to 15 min; older than that is SKIPPED, never backfilled).
 - **Score:** fixed 0–10 rule (see `memeline/scoring.py`), signal at ≥ 7.
@@ -37,7 +44,8 @@ positive after fees).
 | `memeline/scoring.py` | Frozen v1 scoring rule (pure functions) |
 | `memeline/ledger.py` | Paper calls, grading, gate progress |
 | `memeline/discord.py` | Discord webhook signal posts |
-| `memeline/pumpportal.py` | PumpPortal WebSocket client |
+| `memeline/solana_feed.py` | Direct Solana launch feed (active) |
+| `memeline/pumpportal.py` | PumpPortal WebSocket client (fallback, inactive by default) |
 | `schema.sql` | Tables: raw_launches, evaluations, paper_calls, grades, gaps, meta |
 | `static/index.html` | Public track-record dashboard |
 | `render.yaml` | Render free web service |
@@ -84,6 +92,7 @@ the database and not posted anywhere.
 | `HELIUS_API_KEY` | yes (prod) | **Cheli — never in chat, never in a file** |
 | `DISCORD_WEBHOOK_URL` | no | Discord server settings |
 | `CAPTURE_ENABLED` | no | `1` to run the feed inside the web service |
+| `FEED_SOURCE` | no | `solana` (default) or `pumpportal` — which launch feed is active |
 | `DATABASE_PATH` | no | local dev only (default `memeline.db`) |
 
 See [DEPLOY.md](DEPLOY.md) for the deploy steps and the checks that
