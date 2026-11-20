@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Meme Line — paper track record</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0 auto;
+    max-width: 860px; padding: 20px; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 1.6em; margin-bottom: 0; }
+  .sub { color: #555; margin-top: 4px; }
+  .gate { border: 1px solid #ccc; border-radius: 8px; padding: 14px;
+    margin: 18px 0; background: #f7f7f7; }
+  .gate b { font-size: 1.2em; }
+  .bar { height: 12px; background: #ddd; border-radius: 6px; overflow: hidden;
+    margin: 8px 0; }
+  .bar > div { height: 100%; background: #2e7d32; }
+  .note { font-size: 0.9em; color: #555; border-left: 3px solid #c9a227;
+    padding-left: 10px; margin: 18px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e0e0e0; }
+  .win { color: #2e7d32; } .loss { color: #b3261e; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 0.85em; background: #eee; }
+  .mint { font-family: monospace; font-size: 0.85em; color: #555; }
+  .empty { color: #777; font-style: italic; }
+</style>
+</head>
+<body>
+<h1>The Meme Line</h1>
+<p class="sub">Paper memecoin signals for careful beginners. Signals only —
+the bot never trades, never holds a key, never touches money.</p>
+
+<div class="gate" id="gate"><p class="empty">Loading gate progress…</p></div>
+
+<div class="note">Paper signals only. Every call is $10 hypothetical, graded at
+take-profit +100%, stop-loss −50%, or the 24-hour price, minus 1% fees per
+side. Paper results will look better than real results: real trading adds
+pool fees, priority fees, slippage, and failed transactions. Most memecoins
+lose money. This is not financial advice.</div>
+
+<h2>Open calls</h2>
+<div id="open"><p class="empty">Loading…</p></div>
+
+<h2>Track record</h2>
+<div id="calls"><p class="empty">Loading…</p></div>
+
+<script>
+async function load() {
+  const res = await fetch('/track-record');
+  const data = await res.json();
+  const g = data.gate;
+  const pct = Math.min(100, Math.round(100 * g.calls / g.gate_calls));
+  document.getElementById('gate').innerHTML =
+    `<b>Validation gate: ${g.status}</b> — ${g.calls} of ${g.gate_calls} calls, ` +
+    `day ${g.days_elapsed} of ${g.gate_min_days} minimum<br>` +
+    `<div class="bar"><div style="width:${pct}%"></div></div>` +
+    `Wins: ${g.wins} (${(100 * g.win_rate).toFixed(1)}%) &nbsp;·&nbsp; ` +
+    `Cumulative net after fees: ${(100 * g.cumulative_net).toFixed(1)}% of stake &nbsp;·&nbsp; ` +
+    `Average per call: ${(100 * g.avg_net_per_call).toFixed(1)}%`;
+  const open = data.calls.filter(c => c.status === 'OPEN');
+  document.getElementById('open').innerHTML = open.length === 0
+    ? '<p class="empty">No open calls right now.</p>'
+    : table(open, false);
+  const closed = data.calls.filter(c => c.status === 'CLOSED');
+  document.getElementById('calls').innerHTML = closed.length === 0
+    ? '<p class="empty">No closed calls yet. The record fills in as signals are graded.</p>'
+    : table(closed, true);
+}
+function table(rows, showResult) {
+  let h = '<table><tr><th>Token</th><th>Signal</th><th>Score</th><th>Entry</th>';
+  if (showResult) h += '<th>Exit</th><th>Net</th>';
+  else h += '<th>Status</th>';
+  h += '</tr>';
+  for (const c of rows) {
+    const d = new Date(c.signal_at * 1000).toLocaleString();
+    const net = c.net_return == null ? '—'
+      : `<span class="${c.net_return > 0 ? 'win' : 'loss'}">${(100 * c.net_return).toFixed(1)}%</span>`;
+    h += `<tr><td>${esc(c.name || '')} (${esc(c.symbol || '')})<br>` +
+      `<span class="mint">${esc(c.mint.slice(0, 8))}…${esc(c.mint.slice(-4))}</span></td>` +
+      `<td>${d}</td><td>${c.score}/10</td>` +
+      `<td>$${c.entry_price} <span class="pill">${esc(c.entry_source)}</span></td>`;
+    if (showResult) h += `<td>${esc(c.exit_reason || '')} @ $${c.exit_price == null ? '—' : c.exit_price}</td><td>${net}</td>`;
+    else h += `<td>OPEN — TP +100% / SL −50% / 24h</td>`;
+    h += '</tr>';
+  }
+  return h + '</table>';
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
