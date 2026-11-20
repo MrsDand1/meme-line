@@ -46,6 +46,17 @@ WS_RECONNECT_BACKOFF = [5, 10, 20, 40, 60]  # seconds, capped at 60
 RUGCHECK_MIN_GAP_SECONDS = 2.0  # pause between RugCheck queries
 PUMPPORTAL_WS_URL = "wss://pumpportal.fun/api/data"
 
+# --- Launch feed ------------------------------------------------------------
+# The active feed is the DIRECT Solana feed (logsSubscribe on the pump.fun
+# program via the public RPC, free, no key). PumpPortal is kept as a
+# fallback: set FEED_SOURCE=pumpportal to switch back. PumpPortal has
+# been unreachable since 2026-11-20 ~07:06 ET, which is why the direct
+# feed is the default. The feed code lives in memeline/solana_feed.py
+# (active) and memeline/pumpportal.py (fallback, intact but inactive).
+PUMP_PROGRAM_ID = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+SOLANA_WS_URL = "wss://api.mainnet-beta.solana.com"
+FEED_SOURCE = os.environ.get("FEED_SOURCE", "solana")  # "solana" | "pumpportal"
+
 # --- Providers --------------------------------------------------------------
 DEXSCREENER_BASE = "https://api.dexscreener.com"
 RUGCHECK_BASE = "https://api.rugcheck.xyz"
