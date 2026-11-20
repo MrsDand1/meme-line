@@ -415,8 +415,6 @@ async def run_capture(database_path=None):
     poll_conn = db.connect(database_path=database_path)
     db.init_db(feed_conn)
     db.init_db(poll_conn)
-    for c in (feed_conn, poll_conn):
-        c.execute("PRAGMA busy_timeout = 5000")
     stop_event = asyncio.Event()
 
     def _stop(*_args):
