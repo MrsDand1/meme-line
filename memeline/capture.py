@@ -1,10 +1,12 @@
 """The Meme Line — capture loop (design section 5, build steps 2-5).
 
-One WebSocket feed (PumpPortal, one connection) logs every launch.
-A 60-second poller evaluates tokens at age 10 minutes, opens paper
-calls on signals, and grades open calls. Missed evaluation windows are
-SKIPPED and logged, never backfilled and never guessed. A failed check
-is "unknown", never a pass.
+One WebSocket feed logs every launch — the direct Solana feed
+(logsSubscribe on the pump.fun program via the public RPC; see
+memeline/solana_feed.py), with the PumpPortal client kept as a
+fallback behind FEED_SOURCE. A 60-second poller evaluates tokens at
+age 10 minutes, opens paper calls on signals, and grades open calls.
+Missed evaluation windows are SKIPPED and logged, never backfilled
+and never guessed. A failed check is "unknown", never a pass.
 """
 import asyncio
 import json
@@ -12,7 +14,8 @@ import signal
 import time
 
 from . import config, db, discord, ledger, providers, scoring
-from .pumpportal import run_feed
+from . import solana_feed
+from .pumpportal import run_feed as run_pumpportal_feed
 
 
 # ---------------------------------------------------------------------------
@@ -409,6 +412,18 @@ def make_feed_callbacks(conn):
     return on_launch, on_migration, on_gap, on_reconnect
 
 
+def select_feed_runner():
+    """The active launch-feed runner, by config.
+
+    Default is the direct Solana feed (solana_feed.run_feed). Set
+    FEED_SOURCE=pumpportal to switch back to the PumpPortal client.
+    Both runners share the same callback signature.
+    """
+    if config.FEED_SOURCE == "pumpportal":
+        return run_pumpportal_feed
+    return solana_feed.run_feed
+
+
 async def run_capture(database_path=None):
     """Run the feed + poller until stopped (SIGTERM/SIGINT)."""
     feed_conn = db.connect(database_path=database_path)
@@ -429,7 +444,7 @@ async def run_capture(database_path=None):
 
     on_launch, on_migration, on_gap, on_reconnect = make_feed_callbacks(feed_conn)
     await asyncio.gather(
-        run_feed(on_launch, on_migration, on_gap, on_reconnect, stop_event),
+        select_feed_runner()(on_launch, on_migration, on_gap, on_reconnect, stop_event),
         poller_loop(poll_conn, stop_event),
     )
 
