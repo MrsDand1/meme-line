@@ -32,12 +32,18 @@ is the Helius *read* key: revocable, holds no funds.
    dashboard. Deploy.
 4. Post-deploy checks (in order):
    - `GET /health` → `status: ok`, `capture_running: true`.
-   - Watch the logs for the first PumpPortal launch events (a few per
-     minute at busy times). `raw_launches` should start filling.
+   - Watch the logs for `[solana-feed] connected, subscribed to
+     pump.fun logs`. `GET /health` again after 2–3 minutes →
+     `last_launch_at` is no longer `null` (launches arrive
+     ~30–40/min at busy times).
    - Wait 10 minutes: the first evaluation should appear in
      `/track-record` (or in `evaluations` with status SKIPPED if the
      token failed the pre-filter).
    - `GET /live` → gate progress shows `IN_PROGRESS`.
+
+   Rollback to PumpPortal (if it recovers): set the Render env var
+   `FEED_SOURCE=pumpportal` and Manual Deploy. See DEPLOY-NOTE.md
+   for the Solana-feed change (2026-11-20).
 
 ## Verification done at Stage 1 (2026-11-19/20)
 
@@ -63,8 +69,10 @@ is the Helius *read* key: revocable, holds no funds.
 ## Still open (do not skip before launch)
 
 1. **24-hour feed soak** — the design's step-2 check: prove the
-   PumpPortal feed stays up for 24 hours on the deployed service,
+   direct Solana feed stays up for 24 hours on the deployed service,
    with the gap log reviewed. Cannot be done in one build session.
+   (PumpPortal, the original feed, has been unreachable since
+   2026-11-20; the direct feed replaces it — see DEPLOY-NOTE.md.)
 2. **Helius DAS authority check on a live pump.fun mint** — verify
    `token_info.mint_authority` / `freeze_authority` via Helius on a
    real pump.fun token (the public-RPC decode was verified instead;
