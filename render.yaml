@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: meme-line-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn tracker:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: CAPTURE_ENABLED
+        value: "1"
+      # Set in the Render dashboard, never in this file:
+      # TURSO_DATABASE_URL, TURSO_AUTH_TOKEN, HELIUS_API_KEY,
+      # DISCORD_WEBHOOK_URL (optional)
